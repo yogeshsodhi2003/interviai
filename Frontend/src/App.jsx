@@ -6,8 +6,9 @@ import Navbar from "./components/Navbar";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Interview from "./pages/Interview";
-
+import { useClerkAuth } from "./hooks/useClerkAuth";
 const App = () => {
+   useClerkAuth()
   return (
     <BrowserRouter>
       <Navbar />

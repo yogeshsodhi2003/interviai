@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
-import { Menu, X, Brain, LogIn } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Menu, X, Brain, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from "@clerk/clerk-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,49 +18,50 @@ const Navbar = () => {
           {/* Logo and brand */}
           <div className="flex items-center">
             <Link to="/">
-            <div className="flex-shrink-0 flex items-center">
-              <Brain className="h-8 w-8 text-blue-600 mr-2" />
-              <span className="text-2xl font-bold text-gray-900">InterviAI</span>
-            </div>
+              <div className="flex-shrink-0 flex items-center">
+                <Brain className="h-8 w-8 text-blue-600 mr-2" />
+                <span className="text-2xl font-bold text-gray-900">
+                  InterviAI
+                </span>
+              </div>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link 
-              to="#features" 
+            <Link
+              to="#features"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Features
             </Link>
-            <Link 
-              to="#how-it-works" 
+            <Link
+              to="#how-it-works"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               How it Works
             </Link>
-            <Link 
-              to="#pricing" 
+            <Link
+              to="#pricing"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Pricing
             </Link>
-            <Link 
-              to="#about" 
+            <Link
+              to="#about"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               About
             </Link>
-            
+
             {/* Auth buttons */}
             <div className="flex items-center space-x-4">
-              <Link to="/signin" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                Login
-              </Link>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
-                <LogIn className="h-4 w-4 mr-2" />
-                Get Started
-              </button>
+              <SignedOut>
+                <SignInButton />
+              </SignedOut>
+              <SignedIn redirectUrl="/interview">
+                <UserButton />
+              </SignedIn>
             </div>
           </div>
 
@@ -65,7 +72,11 @@ const Navbar = () => {
               className="text-gray-700 hover:text-blue-600 focus:outline-none focus:text-blue-600"
               aria-label="Toggle menu"
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -74,29 +85,29 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-              <Link 
-                to="#features" 
+              <Link
+                to="#features"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 Features
               </Link>
-              <Link 
-                to="#how-it-works" 
+              <Link
+                to="#how-it-works"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 How it Works
               </Link>
-              <Link 
-                to="#pricing" 
+              <Link
+                to="#pricing"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 Pricing
               </Link>
-              <Link 
-                to="#about" 
+              <Link
+                to="#about"
                 className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                 onClick={() => setIsOpen(false)}
               >
