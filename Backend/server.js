@@ -5,14 +5,14 @@ import mongoose from 'mongoose';
 import http from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
-import resumeUploadRouter from './routes/resumeUpload.js';
-import aiquestionRouter from './routes/aiquestion.js';
+import resumeUploadRouter from './routes/resume.route.js';
 import liveAudioRouter from './routes/liveaudio.js';
+import userRouter from './routes/user.route.js';
 import  { getGeminiAnswer } from './gemini/gemini.js';
 import connectDB from './database/mongodb.js';
 
 // Connect to MongoDB
-//connectDB();
+connectDB();
 
 // Load environment variables from .env file
 dotenv.config();
@@ -27,18 +27,16 @@ const io = new Server(server, {
 
 // Middleware
 app.use(bodyParser.json());
+app.use(cors());
 
-// MongoDB connection
-// mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-//     .then(() => console.log('MongoDB connected'))
-//     .catch(err => console.log(err));
+
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
-app.use(resumeUploadRouter);
-app.use(aiquestionRouter);
+app.use('/api', resumeUploadRouter);
 app.use(liveAudioRouter);
+app.use('/api/user', userRouter);
 
 
 // 🔌 WebSocket logic

@@ -1,9 +1,8 @@
 import express from "express";
 import { GoogleGenAI } from "@google/genai";
-import textToSpeech from "@google-cloud/text-to-speech";
 import fs from "node:fs";
 
-const ttsClient = new textToSpeech.TextToSpeechClient();
+
 const router = express.Router();
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 

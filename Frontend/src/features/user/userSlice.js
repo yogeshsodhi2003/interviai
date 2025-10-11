@@ -1,8 +1,7 @@
-// features/user/userSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  firebaseUid: null,
+  userId: null,
   email: null,
   name: null,
   resumeSummary: null,
@@ -10,22 +9,23 @@ const initialState = {
 };
 
 const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
   reducers: {
     setUser(state, action) {
-      const { firebaseUid, email, name, resumeSummary } = action.payload;
-      state.firebaseUid = firebaseUid;
+      const { email, name } = action.payload;
       state.email = email;
       state.name = name;
-      state.resumeSummary = resumeSummary || null;
       state.isAuthenticated = true;
     },
     clearUser(state) {
       Object.assign(state, initialState);
     },
+    updateResumeSummary(state, action) {
+      state.resumeSummary = action.payload;
+    },
   },
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, clearUser, updateResumeSummary } = userSlice.actions;
 export default userSlice.reducer;

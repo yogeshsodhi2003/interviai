@@ -1,15 +1,39 @@
 import React, { useState } from "react";
 import { Menu, X, Brain, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/clerk-react";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const user = useSelector((state) => state.user);
+
+  // User avatar component
+  const UserAvatar = () => (
+    <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
+      <span className="text-sm font-medium">
+        {user.name ? user.name[0].toUpperCase() : "U"}
+      </span>
+    </div>
+  );
+
+  // Auth buttons component
+  const AuthButtons = () => (
+    <div className="flex items-center space-x-4">
+      {!user.isAuthenticated ? (
+        <Link
+          to="/signin"
+          className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          <LogIn className="h-5 w-5" />
+          <span>Sign In</span>
+        </Link>
+      ) : (
+        <div className="flex items-center space-x-2">
+          <UserAvatar />
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <nav className="bg-white shadow-lg fixed w-full z-50 top-0">
@@ -55,14 +79,7 @@ const Navbar = () => {
             </Link>
 
             {/* Auth buttons */}
-            <div className="flex items-center space-x-4">
-              <SignedOut>
-                <SignInButton />
-              </SignedOut>
-              <SignedIn redirectUrl="/interview">
-                <UserButton />
-              </SignedIn>
-            </div>
+            <AuthButtons />
           </div>
 
           {/* Mobile menu button */}
@@ -114,12 +131,20 @@ const Navbar = () => {
                 About
               </Link>
               <div className="border-t pt-4">
-                <button className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors">
-                  Login
-                </button>
-                <button className="block w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors">
-                  Get Started
-                </button>
+                {!user.isAuthenticated ? (
+                  <Link
+                    to="/signin"
+                    className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                ) : (
+                  <div className="flex items-center space-x-2 px-3 py-2">
+                    <UserAvatar />
+                    <span className="text-sm text-gray-700">{user.name}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

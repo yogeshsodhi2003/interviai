@@ -1,24 +1,24 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  firebaseUid: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true,
-    description: "Unique Firebase UID for authentication",
-  },
+  
   email: {
     type: String,
+    unique: true,
     required: true,
     lowercase: true,
     trim: true,
-    description: "User email from Firebase",
+    description: "User email",
+  },
+  password:{
+    type: String,
+    required: true,
+    description: "User password",
   },
   name: {
     type: String,
     required: false,
-    description: "User display name from Firebase",
+    description: "User display name",
   },
   resumeSummary: {
     type: String,
