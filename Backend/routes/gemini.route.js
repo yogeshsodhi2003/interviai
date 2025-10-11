@@ -6,7 +6,7 @@ import fs from "node:fs";
 const router = express.Router();
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-router.post("/api/audio", async (req, res) => {
+router.post("/gemini", async (req, res) => {
   const { transcript } = req.body;
   console.log("Received transcript:", transcript);
 

@@ -5,6 +5,7 @@ import path from "node:path";
 import dotenv from "dotenv";
 import { pdf } from "pdf-parse";
 import { GoogleGenAI } from "@google/genai";
+import { updateResume } from "../controllers/resume.controller.js";
 
 dotenv.config();
 
@@ -50,14 +51,20 @@ const upload = multer({
 });
 
 router.post("/resumeupload", upload.single("resume"), async (req, res) => {
+  console.log("File upload request received", req.body);
+  const userId = req.body.userId;
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded" });
+  }
+  if (!userId){
+    return res.status(400).json({ error: "No user id provided" });
   }
 
   try {
     //extraction text
     const filePath = req.file.path;
     const dataBuffer = fs.readFileSync(filePath);
+
     const resumeText = await pdf(dataBuffer);
 
     const text = "Jake Ryan is a recent Computer Science graduate with a minor in Business, specializing in full-stack web development and software engineering. He has significant hands-on experience developing REST APIs (FastAPI), full-stack web applications (Flask, React, PostgreSQL, Docker) for data analysis and visualization, and contributing to large codebases. His background includes impactful research in AI for game generation, which he presented at a world conference, and computational social science. Additionally, he has practical experience in IT support, troubleshooting, and system maintenance, alongside successfully developing and publishing a popular Minecraft plugin with over 2,000 downloads. Jake is proficient in Python, Java, SQL, JavaScript, and key developer tools including Git, Docker, and CI/CD methodologies like TravisCI."
@@ -78,10 +85,20 @@ router.post("/resumeupload", upload.single("resume"), async (req, res) => {
 
     // const text = response.text || "No response from AI";
 
+
+    // Update user's resume summary in the database
+     // Assuming userId is sent in the request body
+    const resume = await updateResume(userId, text);
+    if (!resume) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log("Resume summary updated for user:", userId);
+
     // Clean up the temporary file
     await fs.promises.unlink(req.file.path);
 
-    res.json({ summary: text });
+    res.json({ summary: text , resume});
   } catch (err) {
     console.error("Upload error:", err);
 

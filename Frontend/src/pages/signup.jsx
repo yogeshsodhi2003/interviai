@@ -47,7 +47,6 @@ export default function Signup() {
           userId: data.user._id,
           email: data.user.email,
           name: data.user.name,
-          resumeSummary: data.user.resumeSummary,
         })
       );
       navigate("/");

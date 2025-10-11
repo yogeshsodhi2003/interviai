@@ -2,9 +2,12 @@
 import { useRef, useState } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { updateResumeSummary } from "../features/user/userSlice";
 
 export default function ResumeUploader() {
+  const user = useSelector((state) => state.user);
+  const userId = user.userId;
   const dispatch = useDispatch();
   const ref = useRef(null);
   const [loading, setLoading] = useState(false);
@@ -37,9 +40,15 @@ export default function ResumeUploader() {
     try {
       const form = new FormData();
       form.append("resume", file);
+      form.append("userId", userId);
       const res = await axios.post(
-        "http://localhost:3000/api/resumeupload",
-        form
+        `${import.meta.env.VITE_SERVER_URL}/api/resumeupload`,
+        form,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // Ensure correct content type
+          },
+        }
       );
       console.log(res.data);
       // Dispatch resume summary to Redux
