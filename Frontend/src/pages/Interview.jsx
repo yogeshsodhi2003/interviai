@@ -4,15 +4,24 @@ import { useSelector } from "react-redux";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ResumeUploader from "../components/ResumeUploader";
 // Optional: swap with your icon set
-import { Mic, Square, Video, Play, AlertTriangle, CheckCircle2, Bot, User as UserIcon } from "lucide-react";
+import {
+  Mic,
+  Square,
+  Video,
+  Play,
+  AlertTriangle,
+  CheckCircle2,
+  Bot,
+  User as UserIcon,
+} from "lucide-react";
 
 export default function InterviewPage() {
   const user = useSelector((state) => state.user);
 
   // Conversation + UI state
-  const [messages, setMessages] = useState([]);            // { sender: "AI" | "YOU", text: string }
+  const [messages, setMessages] = useState([]); // { sender: "AI" | "YOU", text: string }
   const [isStarted, setIsStarted] = useState(false);
-  const [loading, setLoading] = useState(false);           // starting the session
+  const [loading, setLoading] = useState(false); // starting the session
   const [error, setError] = useState("");
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [isCandidateSpeaking, setIsCandidateSpeaking] = useState(false);
@@ -44,7 +53,10 @@ export default function InterviewPage() {
     });
 
     socket.on("aiResponse", (response) => {
-      setMessages((prev) => [...prev, { sender: "AI", text: response }]);
+      setMessages((prev) => {
+        const trim = prev.length >= 4 ? prev.slice(1) : prev;
+        [...trim, { sender: "AI", text: response }];
+      });
       speakText(response);
     });
 
@@ -119,7 +131,10 @@ export default function InterviewPage() {
       const roomId = user.userId;
       socketRef.current.emit("joinRoom", { roomId });
       setIsStarted(true);
-      setMessages((prev) => [...prev, { sender: "YOU", text: transcript }]);
+      setMessages((prev) => {
+        const trim = prev.length >= 4 ? prev.slice(1) : prev;
+        [...trim, { sender: "Candidate", text: transcript }];
+      });
       socketRef.current.emit("userMessage", {
         roomId: user.userId,
         message: transcript,
@@ -154,18 +169,23 @@ export default function InterviewPage() {
       recognition.onresult = (event) => {
         const t = event.results[0][0].transcript;
         setTranscript(t);
-        setMessages((prev) => [...prev, { sender: "YOU", text: t }]);
+        setMessages((prev) =>{
+          const trim = prev.length >= 4 ? prev.slice(1) : prev;
+          [...trim, { sender: "YOU", text: t }]
+        } );
 
         // Send to backend and trigger AI response
         socketRef.current?.emit("userMessage", {
           roomId: user.userId,
-          message: t,
+          message: messages,
           resumeSummary: user.resumeSummary,
         });
       };
 
       recognition.onerror = (event) => {
-        setError(event?.error ? `Recording error: ${event.error}` : "Recording error");
+        setError(
+          event?.error ? `Recording error: ${event.error}` : "Recording error"
+        );
         setIsRecording(false);
         setIsCandidateSpeaking(false);
       };
@@ -250,7 +270,9 @@ export default function InterviewPage() {
             </div>
             <div className="leading-tight">
               <p className="text-sm text-slate-300">Interview Assistant</p>
-              <h1 className="text-lg font-semibold text-white">{user?.name || "Candidate"}</h1>
+              <h1 className="text-lg font-semibold text-white">
+                {user?.name || "Candidate"}
+              </h1>
             </div>
           </div>
 
@@ -258,12 +280,26 @@ export default function InterviewPage() {
             <StatusChip
               label={isStarted ? "In session" : "Idle"}
               color={isStarted ? "emerald" : "slate"}
-              icon={isStarted ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Bot className="h-3.5 w-3.5" />}
+              icon={
+                isStarted ? (
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                ) : (
+                  <Bot className="h-3.5 w-3.5" />
+                )
+              }
             />
             {isRecording ? (
-              <StatusChip label="Listening" color="rose" icon={<Mic className="h-3.5 w-3.5" />} />
+              <StatusChip
+                label="Listening"
+                color="rose"
+                icon={<Mic className="h-3.5 w-3.5" />}
+              />
             ) : isAiSpeaking ? (
-              <StatusChip label="Speaking" color="indigo" icon={<Bot className="h-3.5 w-3.5" />} />
+              <StatusChip
+                label="Speaking"
+                color="indigo"
+                icon={<Bot className="h-3.5 w-3.5" />}
+              />
             ) : null}
           </div>
         </div>
@@ -275,9 +311,13 @@ export default function InterviewPage() {
           <div className="absolute inset-0 opacity-20 bg-[radial-gradient(1200px_600px_at_100%_-10%,rgba(67,56,202,0.5),transparent),radial-gradient(800px_400px_at_0%_110%,rgba(14,165,233,0.4),transparent)]" />
           <div className="relative grid gap-6 p-6 sm:p-8 md:grid-cols-3">
             <div className="md:col-span-2">
-              <h2 className="text-2xl sm:text-3xl font-semibold text-white">AI Interview</h2>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+                AI Interview
+              </h2>
               <p className="mt-2 text-slate-300">
-                Speak naturally; the assistant will ask one question at a time, then listen after it finishes speaking. Ensure mic and camera permissions are granted for the best experience.
+                Speak naturally; the assistant will ask one question at a time,
+                then listen after it finishes speaking. Ensure mic and camera
+                permissions are granted for the best experience.
               </p>
 
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -305,7 +345,12 @@ export default function InterviewPage() {
               </div>
 
               <div className="mt-3">
-                <video id="userVideo" autoPlay playsInline className="w-full rounded-lg" />
+                <video
+                  id="userVideo"
+                  autoPlay
+                  playsInline
+                  className="w-full rounded-lg"
+                />
               </div>
 
               <div className="mt-4 grid gap-2">
@@ -316,7 +361,11 @@ export default function InterviewPage() {
                     onClick={handleStartInterview}
                     disabled={loading || isStarted}
                     className={`w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-white shadow transition
-                      ${loading || isStarted ? "bg-slate-600 cursor-not-allowed" : "bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300"}`}
+                      ${
+                        loading || isStarted
+                          ? "bg-slate-600 cursor-not-allowed"
+                          : "bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      }`}
                   >
                     {loading ? (
                       <>
@@ -373,7 +422,8 @@ export default function InterviewPage() {
               <div className="mt-4 space-y-3 max-h-[380px] overflow-auto pr-1">
                 {messages.length === 0 ? (
                   <div className="rounded-lg border border-white/10 p-4 text-sm text-slate-300">
-                    The interview will appear here. After the assistant speaks, the mic will activate for a reply.
+                    The interview will appear here. After the assistant speaks,
+                    the mic will activate for a reply.
                   </div>
                 ) : (
                   messages.map((m, i) => (
@@ -425,7 +475,8 @@ export default function InterviewPage() {
       </main>
 
       <footer className="mx-auto max-w-6xl px-4 py-6 text-xs text-slate-400">
-        Tips: Use headphones, speak clearly, and pause after the assistant finishes speaking.
+        Tips: Use headphones, speak clearly, and pause after the assistant
+        finishes speaking.
       </footer>
     </div>
   );
@@ -443,7 +494,9 @@ function StatusChip({ label, color = "slate", icon }) {
   };
   const cls = colors[color] || colors.slate;
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-1 text-xs ${cls}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-1 text-xs ${cls}`}
+    >
       {icon}
       {label}
     </span>
