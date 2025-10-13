@@ -1,149 +1,155 @@
 import React, { useState } from "react";
-import { Menu, X, Brain, LogIn } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Menu, X, Brain, LogIn, User as UserIcon } from "lucide-react";
+import { Link, NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+/**
+ * Navbar
+ * - Translucent top bar with backdrop blur for a premium feel
+ * - Desktop links + Auth area on the right
+ * - Mobile menu slides down with large tap targets
+ * - Avatar with initials when authenticated
+ */
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const user = useSelector((state) => state.user);
 
-  // User avatar component
+  // Compute initials safely
+  const initials =
+    (user?.name || "")
+      .split(" ")
+      .slice(0, 2)
+      .map((s) => s?.[0]?.toUpperCase())
+      .join("") || "U";
+
+  const isAuthed = Boolean(user?.isAuthenticated);
+
   const UserAvatar = () => (
-    <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
-      <span className="text-sm font-medium">
-        {user.name ? user.name[0].toUpperCase() : "U"}
-      </span>
+    <div
+      title={user?.name || "User"}
+      className="h-8 w-8 rounded-lg bg-indigo-500/80 text-white grid place-items-center ring-1 ring-white/10"
+    >
+      <span className="text-xs font-semibold">{initials}</span>
     </div>
   );
 
-  // Auth buttons component
   const AuthButtons = () => (
-    <div className="flex items-center space-x-4">
-      {!user.isAuthenticated ? (
+    <div className="flex items-center gap-3">
+      {!isAuthed ? (
         <Link
           to="/signin"
-          className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-500 px-3 py-2 text-white shadow hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
         >
-          <LogIn className="h-5 w-5" />
+          <LogIn className="h-4 w-4" />
           <span>Sign In</span>
         </Link>
       ) : (
-        <div className="flex items-center space-x-2">
+        <Link
+          to="/dashboard"
+          className="group inline-flex items-center gap-2 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-white/30"
+          aria-label="Go to dashboard"
+        >
           <UserAvatar />
-        </div>
+          <span className="hidden lg:inline text-sm text-slate-200 group-hover:text-white">
+            {user?.name || "Dashboard"}
+          </span>
+        </Link>
       )}
     </div>
   );
 
+  const NavItem = ({ to, children }) => (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        [
+          "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+          "text-slate-200 hover:text-white",
+          isActive ? "bg-white/10" : "hover:bg-white/5",
+          "focus:outline-none focus:ring-2 focus:ring-white/20",
+        ].join(" ")
+      }
+      onClick={() => setIsOpen(false)}
+    >
+      {children}
+    </NavLink>
+  );
+
   return (
-    <nav className="bg-white shadow-lg fixed w-full z-50 top-0">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo and brand */}
-          <div className="flex items-center">
-            <Link to="/">
-              <div className="flex-shrink-0 flex items-center">
-                <Brain className="h-8 w-8 text-blue-600 mr-2" />
-                <span className="text-2xl font-bold text-gray-900">
+    <nav className="fixed inset-x-0 top-0 z-50">
+      {/* Background bar with glass effect */}
+      <div className="backdrop-blur supports-[backdrop-filter]:bg-slate-900/50 bg-slate-900/60 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Row */}
+          <div className="h-16 flex items-center justify-between">
+            {/* Brand */}
+            <div className="flex items-center gap-3">
+              <Link
+                to="/"
+                className="flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-white/20 rounded-md px-1"
+              >
+                <div className="h-9 w-9 grid place-items-center rounded-lg bg-indigo-500/20 ring-1 ring-white/10">
+                  <Brain className="h-5 w-5 text-indigo-300" />
+                </div>
+                <span className="text-xl font-bold text-white tracking-tight">
                   InterviAI
                 </span>
-              </div>
-            </Link>
-          </div>
+              </Link>
+            </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link
-              to="#features"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              Features
-            </Link>
-            <Link
-              to="#how-it-works"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              How it Works
-            </Link>
-            <Link
-              to="#pricing"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              Pricing
-            </Link>
-            <Link
-              to="#about"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              About
-            </Link>
+            {/* Desktop navigation */}
+            <div className="hidden md:flex items-center gap-6">
+              <NavItem to="#features">Features</NavItem>
+              <NavItem to="#how-it-works">How it Works</NavItem>
+              <NavItem to="#pricing">Pricing</NavItem>
+              <NavItem to="#about">About</NavItem>
+              <AuthButtons />
+            </div>
 
-            {/* Auth buttons */}
-            <AuthButtons />
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-blue-600 focus:outline-none focus:text-blue-600"
-              aria-label="Toggle menu"
-            >
-              {isOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
+            {/* Mobile menu button */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsOpen((s) => !s)}
+                className="text-slate-200 hover:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-white/20"
+                aria-label="Toggle menu"
+                aria-expanded={isOpen}
+              >
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Mobile Navigation Menu */}
+        {/* Mobile menu */}
         {isOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-              <Link
-                to="#features"
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                Features
-              </Link>
-              <Link
-                to="#how-it-works"
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                How it Works
-              </Link>
-              <Link
-                to="#pricing"
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                Pricing
-              </Link>
-              <Link
-                to="#about"
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                About
-              </Link>
-              <div className="border-t pt-4">
-                {!user.isAuthenticated ? (
+          <div className="md:hidden border-t border-white/10 bg-slate-900/70">
+            <div className="max-w-7xl mx-auto px-4 py-3 space-y-1">
+              <NavItem to="#features">Features</NavItem>
+              <NavItem to="#how-it-works">How it Works</NavItem>
+              <NavItem to="#pricing">Pricing</NavItem>
+              <NavItem to="#about">About</NavItem>
+
+              <div className="pt-3 border-t border-white/10">
+                {!isAuthed ? (
                   <Link
                     to="/signin"
-                    className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                     onClick={() => setIsOpen(false)}
+                    className="block w-full text-left px-3 py-2 rounded-md text-slate-200 hover:text-white hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white/20"
                   >
                     Sign In
                   </Link>
                 ) : (
-                  <div className="flex items-center space-x-2 px-3 py-2">
+                  <Link
+                    to="/dashboard" // fixed typo from "/dasboard"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white/20"
+                  >
                     <UserAvatar />
-                    <span className="text-sm text-gray-700">{user.name}</span>
-                  </div>
+                    <div className="min-w-0">
+                      <p className="text-sm text-slate-200 truncate">{user?.name}</p>
+                      <p className="text-xs text-slate-400 -mt-0.5">Dashboard</p>
+                    </div>
+                  </Link>
                 )}
               </div>
             </div>

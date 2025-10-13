@@ -1,172 +1,213 @@
-import React from 'react';
-import { Brain, Users, Calendar, BarChart3, Plus, Settings, Search, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { clearUser } from '../features/user/userSlice';
+import { useMemo } from 'react';
+import { ArrowRight, Upload, LogOut, FileText, History, MessageSquare } from 'lucide-react';
 
-// Dashboard layout with summary cards, upcoming interviews, recent candidates, and performance charts placeholder
-const Dashboard = () => {
-  const summary = [
-    { label: 'Scheduled Interviews', value: 12, icon: Calendar, color: 'bg-blue-50 text-blue-700', chip: '+3 today' },
-    { label: 'Candidates in Pipeline', value: 48, icon: Users, color: 'bg-purple-50 text-purple-700', chip: '8 new' },
-    { label: 'Average Score', value: '78%', icon: BarChart3, color: 'bg-green-50 text-green-700', chip: '↑ 4% wk' },
-    { label: 'AI Questions Used', value: 214, icon: Brain, color: 'bg-indigo-50 text-indigo-700', chip: 'this month' },
-  ];
+export default function Dashboard() {
+  const user = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const upcoming = [
-    { time: '10:00 AM', role: 'Frontend Engineer', candidate: 'Anjali Verma', status: 'Scheduled' },
-    { time: '11:30 AM', role: 'Backend Engineer', candidate: 'Rohit Sharma', status: 'Scheduled' },
-    { time: '2:00 PM', role: 'Fullstack Developer', candidate: 'Meera Iyer', status: 'Pending' },
-  ];
+  const handleReupload = () => navigate('/upload-resume');
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    dispatch(clearUser());
+    navigate('/login');
+  };
 
-  const recent = [
-    { name: 'Arjun Mehta', role: 'Frontend Engineer', score: 86, stage: 'Shortlisted' },
-    { name: 'Priya Nair', role: 'Data Engineer', score: 73, stage: 'Reviewed' },
-    { name: 'Kunal Singh', role: 'Backend Engineer', score: 64, stage: 'Needs follow-up' },
-  ];
+  const initials = useMemo(() => {
+    const n = user?.name || '';
+    return (
+      n
+        .split(' ')
+        .slice(0, 2)
+        .map((s) => s[0]?.toUpperCase())
+        .join('') || 'U'
+    );
+  }, [user?.name]);
+
+  const resumePresent = Boolean(user?.resumeSummary);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="border-b bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 text-slate-100">
+      <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-slate-900/50 border-b border-white/10">
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center">
-              <Brain className="h-5 w-5 text-white" />
+            <div className="h-9 w-9 rounded-lg bg-indigo-500/20 ring-1 ring-inset ring-white/10 grid place-items-center">
+              <span className="text-indigo-300 font-semibold">{initials}</span>
             </div>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-              <p className="text-sm text-gray-500">Welcome back to InterviAI</p>
+            <div className="leading-tight">
+              <p className="text-sm text-slate-300">Welcome back</p>
+              <h1 className="text-lg font-semibold text-white">{user?.name || 'Candidate'}</h1>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center bg-gray-100 rounded-lg px-3">
-              <Search className="h-4 w-4 text-gray-500" />
-              <input placeholder="Search candidates, roles..." className="bg-transparent px-2 py-2 outline-none text-sm" />
-            </div>
-            <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-              <Plus className="h-4 w-4" /> New Interview
-            </button>
-            <button className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50">
-              <Settings className="h-4 w-4" />
-            </button>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="inline-flex items-center gap-2 rounded-lg bg-red-500/90 px-4 py-2 text-white shadow-sm hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-300"
+          >
+            <LogOut className="h-4 w-4" /> Logout
+          </button>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Summary cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {summary.map((s) => (
-            <div key={s.label} className="bg-white rounded-xl shadow-sm border p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">{s.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{s.value}</p>
-                </div>
-                <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${s.color}`}>
-                  <s.icon className="h-5 w-5" />
-                </div>
+      <main className="mx-auto max-w-6xl px-4 py-8 space-y-8">
+        {/* Hero / Glass card */}
+        <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl">
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(1200px_600px_at_100%_-10%,rgba(67,56,202,0.5),transparent),radial-gradient(800px_400px_at_0%_110%,rgba(14,165,233,0.4),transparent)]" />
+          <div className="relative grid gap-6 p-6 sm:p-8 md:grid-cols-3">
+            <div className="md:col-span-2">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white">Interview Dashboard</h2>
+              <p className="mt-2 text-slate-300">
+                Manage the resume, run mock interviews, and review feedback with a professional, streamlined interface built for preparation.
+              </p>
+
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => navigate('/mock-interview')}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-500 px-4 py-2.5 text-white shadow hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                >
+                  Start mock interview <ArrowRight className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={handleReupload}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-white/10 px-4 py-2.5 text-slate-100 ring-1 ring-inset ring-white/15 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/30"
+                >
+                  <Upload className="h-4 w-4" /> Reupload resume
+                </button>
               </div>
-              <div className="mt-4 text-xs text-gray-500">{s.chip}</div>
             </div>
-          ))}
-        </div>
 
-        {/* Main grid */}
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Upcoming interviews */}
-          <div className="bg-white rounded-xl shadow-sm border p-5 lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Upcoming Interviews</h2>
-              <button className="text-sm text-blue-600 hover:underline">View calendar</button>
+            {/* Resume status */}
+            <div className="rounded-xl border border-white/10 bg-black/20 p-5">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-emerald-300" />
+                <h3 className="font-medium text-white">Resume status</h3>
+              </div>
+              <p className="mt-2 text-sm text-slate-300">
+                {resumePresent ? 'Resume uploaded' : 'No resume found'}
+              </p>
+              <div className="mt-4 text-xs text-slate-400 line-clamp-4">
+                {resumePresent
+                  ? user.resumeSummary
+                  : 'Upload a resume to personalize interview questions and feedback.'}
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={handleReupload}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-emerald-500/90 px-3 py-2 text-white hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                >
+                  <Upload className="h-4 w-4" />
+                  {resumePresent ? 'Update resume' : 'Upload resume'}
+                </button>
+              </div>
             </div>
-            <div className="divide-y">
-              {upcoming.map((u, i) => (
-                <div key={i} className="py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-semibold">
-                      {u.time}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{u.role}</p>
-                      <p className="text-sm text-gray-500">{u.candidate}</p>
-                    </div>
-                  </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full border ${u.status === 'Scheduled' ? 'text-green-700 bg-green-50 border-green-200' : 'text-yellow-700 bg-yellow-50 border-yellow-200'}`}>
-                    {u.status}
-                  </span>
-                </div>
+          </div>
+        </section>
+
+        {/* Quick stats + actions */}
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Interviews" value={user?.stats?.interviews || 0} trend="+0 today" />
+          <StatCard label="Avg. score" value={user?.stats?.avgScore || 0} suffix="/10" trend="last 7 days" />
+          <StatCard label="Feedback" value={user?.stats?.feedback || 0} trend="new comments" />
+          <StatCard label="Streak" value={user?.stats?.streak || 0} trend="days practicing" />
+        </section>
+
+        {/* Panels */}
+        <section className="grid gap-6 lg:grid-cols-3">
+          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 lg:col-span-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-white font-medium flex items-center gap-2">
+                <History className="h-5 w-5 text-indigo-300" />
+                Recent activity
+              </h3>
+              <button
+                onClick={() => navigate('/history')}
+                className="text-sm text-indigo-300 hover:text-indigo-200"
+              >
+                View all
+              </button>
+            </div>
+            <div className="mt-4 divide-y divide-white/10">
+              {(user?.recent || []).slice(0, 5).map((row, idx) => (
+                <ActivityRow key={idx} row={row} />
               ))}
+              {!(user?.recent || []).length && (
+                <div className="rounded-lg border border-white/10 p-4 text-sm text-slate-300">
+                  No activity yet. Start a mock interview to see results and feedback here.
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Performance snapshot */}
-          <div className="bg-white rounded-xl shadow-sm border p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Performance Snapshot</h2>
-            <div className="space-y-3">
-              <Metric label="Average time to hire" value="6.4 days" trend="-0.8 days" positive />
-              <Metric label="Offer acceptance rate" value="72%" trend="+3%" positive />
-              <Metric label="Interview completion" value="92%" trend="-1%" />
-              <Metric label="False negatives (est.)" value="4%" trend="-0.5%" positive />
-            </div>
-            <div className="mt-5">
-              <div className="h-28 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border flex items-center justify-center text-sm text-gray-500">
-                Chart placeholder (connect analytics)
-              </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5">
+            <h3 className="text-white font-medium flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-sky-300" />
+              Quick actions
+            </h3>
+            <div className="mt-4 grid gap-3">
+              <ActionButton
+                onClick={() => navigate('/practice/dsa')}
+                title="Practice DSA round"
+                subtitle="Timed 30 min set"
+              />
+              <ActionButton
+                onClick={() => navigate('/practice/system-design')}
+                title="System design drill"
+                subtitle="10 min prompt"
+              />
+              <ActionButton
+                onClick={() => navigate('/settings')}
+                title="Settings"
+                subtitle="Audio, STT, TTS, auth"
+              />
             </div>
           </div>
-        </div>
+        </section>
+      </main>
 
-        {/* Recent candidates */}
-        <div className="mt-6 bg-white rounded-xl shadow-sm border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Candidates</h2>
-            <button className="text-sm text-blue-600 hover:underline">View all</button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left">
-              <thead>
-                <tr className="text-xs uppercase text-gray-500">
-                  <th className="py-2 pr-6">Name</th>
-                  <th className="py-2 pr-6">Role</th>
-                  <th className="py-2 pr-6">Score</th>
-                  <th className="py-2 pr-6">Stage</th>
-                  <th className="py-2 pr-6">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {recent.map((c, i) => (
-                  <tr key={i} className="text-sm">
-                    <td className="py-3 pr-6 font-medium text-gray-900">{c.name}</td>
-                    <td className="py-3 pr-6 text-gray-600">{c.role}</td>
-                    <td className="py-3 pr-6">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${c.score >= 80 ? 'bg-green-50 text-green-700' : c.score >= 70 ? 'bg-yellow-50 text-yellow-700' : 'bg-red-50 text-red-700'}`}>
-                        {c.score}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-6 text-gray-600">{c.stage}</td>
-                    <td className="py-3 pr-6">
-                      <button className="text-blue-600 hover:underline">View</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <footer className="mx-auto max-w-6xl px-4 py-6 text-xs text-slate-400">
+        © {new Date().getFullYear()} Interview Prep. All rights reserved.
+      </footer>
+    </div>
+  );
+}
+
+function StatCard({ label, value, suffix, trend }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4 hover:bg-white/10 transition-colors">
+      <p className="text-xs text-slate-300">{label}</p>
+      <div className="mt-1 flex items-baseline gap-1">
+        <p className="text-2xl font-semibold text-white">{value}</p>
+        {suffix ? <span className="text-slate-400">{suffix}</span> : null}
+      </div>
+      {trend ? <p className="mt-1 text-xs text-slate-400">{trend}</p> : null}
+    </div>
+  );
+}
+
+function ActivityRow({ row }) {
+  return (
+    <div className="flex items-center justify-between py-3">
+      <div>
+        <p className="text-sm text-white">{row?.title || 'Mock interview'}</p>
+        <p className="text-xs text-slate-400">{row?.date || '—'} • {row?.tag || 'General'}</p>
+      </div>
+      <div className="text-sm text-slate-300">
+        {typeof row?.score !== 'undefined' ? `Score: ${row.score}/10` : ''}
       </div>
     </div>
   );
-};
+}
 
-const Metric = ({ label, value, trend, positive }) => (
-  <div className="flex items-center justify-between">
-    <div>
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-lg font-semibold text-gray-900">{value}</p>
-    </div>
-    <div className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${positive ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
-      {positive ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />} {trend}
-    </div>
-  </div>
-);
-
-export default Dashboard;
+function ActionButton({ onClick, title, subtitle }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full rounded-lg border border-white/10 bg-black/20 px-4 py-3 text-left hover:bg-black/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+    >
+      <p className="text-sm text-white">{title}</p>
+      {subtitle ? <p className="text-xs text-slate-400">{subtitle}</p> : null}
+    </button>
+  );
+}
