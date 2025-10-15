@@ -19,14 +19,14 @@ export default function InterviewPage() {
   const user = useSelector((state) => state.user);
 
   // Conversation + UI state
-  const [messages, setMessages] = useState([]); // { sender: "AI" | "YOU", text: string }
+  const [messages, setMessages] = useState([]); // { sender: "AI" | "candidate", text: string }
   const [isStarted, setIsStarted] = useState(false);
   const [loading, setLoading] = useState(false); // starting the session
   const [error, setError] = useState("");
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [isCandidateSpeaking, setIsCandidateSpeaking] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState("the interview has started");
+  const [transcript, setTranscript] = useState("");
 
   // Refs for media + sockets
   const recognitionRef = useRef(null);
@@ -41,7 +41,6 @@ export default function InterviewPage() {
     const socket = io(import.meta.env.VITE_SERVER_URL, {
       transports: ["websocket"],
       reconnection: true,
-      // Tip: include auth if using JWT: auth: { token: yourToken }
     });
 
     socketRef.current = socket;
@@ -53,11 +52,13 @@ export default function InterviewPage() {
     });
 
     socket.on("aiResponse", (response) => {
-      setMessages((prev) => {
-        const trim = prev.length >= 4 ? prev.slice(1) : prev;
-        [...trim, { sender: "AI", text: response }];
-      });
+      
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: "AI", text: response },
+      ].slice(-4)); // Keep last 4 messages
       speakText(response);
+      console.log(messages)
     });
 
     socket.on("connect_error", (err) => {
@@ -131,13 +132,15 @@ export default function InterviewPage() {
       const roomId = user.userId;
       socketRef.current.emit("joinRoom", { roomId });
       setIsStarted(true);
-      setMessages((prev) => {
-        const trim = prev.length >= 4 ? prev.slice(1) : prev;
-        [...trim, { sender: "Candidate", text: transcript }];
-      });
+
+      // Add initial message
+      const initialMessage = "The interview has started";
+      setMessages([{ sender: "Candidate", text: initialMessage }]);
+
+      // Send initial message
       socketRef.current.emit("userMessage", {
         roomId: user.userId,
-        message: transcript,
+        message: initialMessage,
         resumeSummary: user.resumeSummary,
       });
     } catch (err) {
@@ -169,15 +172,17 @@ export default function InterviewPage() {
       recognition.onresult = (event) => {
         const t = event.results[0][0].transcript;
         setTranscript(t);
-        setMessages((prev) =>{
-          const trim = prev.length >= 4 ? prev.slice(1) : prev;
-          [...trim, { sender: "YOU", text: t }]
-        } );
 
-        // Send to backend and trigger AI response
+        // Update messages with candidate's speech
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { sender: "Candidate", text: t },
+        ].slice(-4)); // Keep last 4 messages
+
+        // Send only the transcript to backend
         socketRef.current?.emit("userMessage", {
           roomId: user.userId,
-          message: messages,
+          message: messages, // Send transcript instead of messages array
           resumeSummary: user.resumeSummary,
         });
       };
@@ -215,7 +220,6 @@ export default function InterviewPage() {
   const speakText = (response) => {
     // Cancel any current speech
     stopSpeaking();
-
     const utterance = new SpeechSynthesisUtterance(response);
     currentUtteranceRef.current = utterance;
 
@@ -420,7 +424,7 @@ export default function InterviewPage() {
             <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5">
               <h3 className="text-white font-medium">Conversation</h3>
               <div className="mt-4 space-y-3 max-h-[380px] overflow-auto pr-1">
-                {messages.length === 0 ? (
+                {messages.length == 0 ? (
                   <div className="rounded-lg border border-white/10 p-4 text-sm text-slate-300">
                     The interview will appear here. After the assistant speaks,
                     the mic will activate for a reply.

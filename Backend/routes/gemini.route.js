@@ -2,7 +2,6 @@ import express from "express";
 import { GoogleGenAI } from "@google/genai";
 import fs from "node:fs";
 
-
 const router = express.Router();
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -15,7 +14,6 @@ router.post("/gemini", async (req, res) => {
   }
 
   try {
-
     const text = "this is a test response of testing purpose only";
     // uncomment below to enable TTS
 
