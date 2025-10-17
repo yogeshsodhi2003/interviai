@@ -1,0 +1,16 @@
+version: '3'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=mongodb+srv://yogeshsodhi:123@interviaicluster.saiqt30.mongodb.net/?retryWrites=true&w=majority&appName=interviaiCluster
+    depends_on:
+      - frontend
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5000:80"
+

@@ -3,8 +3,8 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import http from 'http';
 import dotenv from 'dotenv';
+import path from 'node:path';
 import resumeUploadRouter from './routes/resume.route.js';
-import geminiRouter from './routes/gemini.route.js';
 import userRouter from './routes/user.route.js';
 import connectDB from './database/mongodb.js';
 import configureSocket from './config/socket.js';
@@ -16,7 +16,8 @@ connectDB();
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
+const __dirname = path.resolve(); 
 
 // Create HTTP server
 const server = http.createServer(app);
@@ -28,13 +29,12 @@ configureSocket(server);
 app.use(bodyParser.json());
 app.use(cors());
 
-// Routes
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
 app.use('/api', resumeUploadRouter);
-app.use('/api', geminiRouter);
 app.use('/api/user', userRouter);
 
+app.get('/', (req, res) => { 
+    res.send('API is running...');
+});
+
 // Start server
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT,'0.0.0.0', () => console.log(`Server running on port ${PORT}`));
